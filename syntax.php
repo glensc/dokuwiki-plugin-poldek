@@ -33,9 +33,9 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
       return array(
         'author' => 'Elan Ruusamäe',
         'email'  => 'glen@delfi.ee',
-        'date'   => '2008-09-10',
-        'name'   => 'Matrix Plugin',
-        'desc'   => 'Matrix addons plugin',
+        'date'   => '2009-01-29',
+        'name'   => 'Poldek Plugin',
+        'desc'   => 'Plugin to display package version info from repositories',
         'url'    => 'https://cvs.delfi.ee/dokuwiki/plugin/poldek/',
       );
     }
