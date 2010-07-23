@@ -18,6 +18,7 @@ $conf['plugin']['poldek']['cachedir'] = '/tmp/dw-poldek';
 $conf['plugin']['poldek']['http_proxy'] = 'http://proxy.delfi.lan:3128/';
 $conf['plugin']['poldek']['ftp_proxy'] = 'http://proxy.delfi.lan:3128/';
 $conf['plugin']['poldek']['repos'] = 'dsl';
+$conf['plugin']['poldek']['debug'] = true;
  */
 
 /**
@@ -92,7 +93,7 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 
         if ($c['repos']) {
             foreach (explode(',', $c['repos']) as $repo) {
-                $poldek .= ' --sn '.escapeshellarg($repo);
+                $poldek .= ' --sn '.escapeshellarg(trim($repo));
             }
         }
 
