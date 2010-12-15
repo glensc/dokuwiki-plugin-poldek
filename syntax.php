@@ -126,8 +126,12 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
         }
 
         if ($rc) {
-            dbglog($lines);
-            $renderer->doc .= "<b style='color: red'>poldek error, see debug.log for details</b>";
+            if (preg_match('/^error:.*no such package or directory/', $lines[0])) {
+                $renderer->doc .= join(' ', $lines);
+            } else {
+                dbglog($lines);
+                $renderer->doc .= "<b style='color: red'>poldek error, see debug.log for details</b>";
+            }
         } else {
             $renderer->doc .= join("\n", $lines);
         }
