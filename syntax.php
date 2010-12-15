@@ -125,7 +125,10 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
             error_log("got[".join('\n', $lines)."] -> $rc");
         }
 
-        if (!$rc) {
+        if ($rc) {
+            dbglog($lines);
+            $renderer->doc .= "<b style='color: red'>poldek error, see debug.log for details</b>";
+        } else {
             $renderer->doc .= join("\n", $lines);
         }
 
