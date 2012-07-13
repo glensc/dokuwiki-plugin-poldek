@@ -26,21 +26,6 @@ $conf['plugin']['poldek']['debug'] = true;
  * need to inherit from this class
  */
 class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
-
-    /**
-     * return some info
-     */
-    function getInfo() {
-      return array(
-        'author' => 'Elan Ruusamäe',
-        'email'  => 'glen@delfi.ee',
-        'date'   => '2009-01-29',
-        'name'   => 'Poldek Plugin',
-        'desc'   => 'Plugin to display package version info from repositories',
-        'url'    => 'https://cvs.delfi.ee/dokuwiki/plugin/poldek/',
-      );
-    }
-
     /**
      * What kind of syntax are we?
      */
