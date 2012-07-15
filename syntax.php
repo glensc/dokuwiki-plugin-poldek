@@ -69,13 +69,6 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 
 		$helper = $this->loadHelper($this->getPluginName(), true);
 
-		static $sync = false;
-		if (!$sync) {
-			// TODO: add to page meta info that this page has poldek query, so webbug could update indexes
-			$helper->sync();
-			$sync = true;
-		}
-
 		// TODO: in preview and in history pages ($REV) the metadata is
 		// outdated (it is always for recent page version)
 		$packages = p_get_metadata($ID, "plugin_" . $this->getPluginName());
