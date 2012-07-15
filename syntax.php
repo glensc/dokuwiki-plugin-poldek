@@ -29,21 +29,21 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	/**
 	 * What kind of syntax are we?
 	 */
-	function getType() {
+	public function getType() {
 		return 'substition';
 	}
 
 	/**
 	 * Where to sort in?
 	 */
-	function getSort() {
+	public function getSort() {
 		return 306;
 	}
 
 	/**
 	 * Connect pattern to lexer
 	 */
-	function connectTo($mode) {
+	public function connectTo($mode) {
 		$this->Lexer->addSpecialPattern('\{\{poldek>.+?\}\}', $mode, 'plugin_poldek');
 	}
 
@@ -51,7 +51,7 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	/**
 	 * Handle the match
 	 */
-	function handle($match, $state, $pos, &$handler) {
+	public function handle($match, $state, $pos, &$handler) {
 		$raw = substr($match, 9, -2);
 
 		$data = array('pkg' => $raw);
@@ -61,55 +61,22 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	/**
 	 * Create output
 	 */
-	function render($format, &$renderer, $data) {
+	public function render($format, &$renderer, $data) {
 		global $ID;
 		if ($format != 'xhtml') {
 			return false;
 		}
 
-		global $conf;
-		// get plugin config
-		$c = empty($conf['plugin']['poldek']) ? array() : $conf['plugin']['poldek'];
-
-		$cachedir = !empty($c['cachedir']) ? $c['cachedir'] : '/tmp/dw-poldek';
-
-		// base poldek command
-		$poldek = 'poldek -q --skip-installed -O cachedir='.escapeshellarg($cachedir);
-
-		if ($c['repos']) {
-			foreach (explode(',', $c['repos']) as $repo) {
-				$poldek .= ' --sn '.escapeshellarg(trim($repo));
-			}
-		}
+		$helper = $this->loadHelper('poldek', true);
 
 		static $sync = false;
 		if (!$sync) {
-			// sync indexes once per page
-			$cmd = "$poldek --up";
-			// proxies setup
-			if (!empty($c['http_proxy'])) {
-				$cmd .= ' -O '.escapeshellarg("proxy=http: {$c['http_proxy']}");
-			}
-			if (!empty($c['ftp_proxy'])) {
-				$cmd .= ' -O '.escapeshellarg("proxy=ftp: {$c['ftp_proxy']}");
-			}
-
-			if ($c['debug']) {
-				error_log($cmd);
-			}
-			exec($cmd, $lines, $rc);
+			// TODO: add to page meta info that this page has poldek query, so webbug could update indexes
+			$helper->sync();
 			$sync = true;
 		}
 
-		$cmd = $poldek.' -Q --shcmd='.escapeshellarg("ls {$data['pkg']}");
-		if ($c['debug']) {
-			error_log($cmd);
-		}
-		exec($cmd, $lines, $rc);
-		if ($c['debug']) {
-			error_log("got[".join('\n', $lines)."] -> $rc");
-		}
-
+		$rc = $helper->query("ls {$data['pkg']}", $lines);
 		if ($rc) {
 			if (preg_match('/^error:.*no such package or directory/', $lines[0])) {
 				$renderer->doc .= join(' ', $lines);
@@ -122,6 +89,28 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Somewhy Syntax plugins don't have this method. duplicate
+	 *
+	 * Loads a given helper plugin (if enabled)
+	 *
+	 * @author  Esther Brunner <wikidesign@gmail.com>
+	 *
+	 * @param   $name   name of plugin to load
+	 * @param   $msg    message to display in case the plugin is not available
+	 *
+	 * @return  object  helper plugin object
+	 */
+	function loadHelper($name, $msg){
+		if (!plugin_isdisabled($name)){
+			$obj =& plugin_load('helper',$name);
+		}else{
+			$obj = null;
+		}
+		if (is_null($obj) && $msg) msg("Helper plugin $name is not available or invalid.",-1);
+		return $obj;
 	}
 }
 
