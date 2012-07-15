@@ -17,31 +17,31 @@ if(!defined('DOKU_INC')) die();
  */
 class action_plugin_poldek extends DokuWiki_Action_Plugin {
 
-    /**
-     * if true our process is already running
-     */
-    private $run = false;
+	/**
+	 * if true our process is already running
+	 */
+	private $run = false;
 
-    /**
-     * Register its handlers with the dokuwiki's event controller
-     */
-    function register(&$controller) {
-        $controller->register_hook('INDEXER_TASKS_RUN', 'BEFORE', $this, 'cron', array());
-    }
+	/**
+	 * Register its handlers with the dokuwiki's event controller
+	 */
+	function register(&$controller) {
+		$controller->register_hook('INDEXER_TASKS_RUN', 'BEFORE', $this, 'cron', array());
+	}
 
-    /**
-     * Update poldek indexes in the background
-     */
-    function cron(&$event, $param) {
+	/**
+	 * Update poldek indexes in the background
+	 */
+	function cron(&$event, $param) {
 		if ($this->run) {
 			return;
 		}
 
-        $this->run = true;
+		$this->run = true;
 
 		$helper = $this->loadHelper($this->getPluginName(), true);
 		$helper->sync(true);
-    }
+	}
 }
 
 //Setup VIM: ex: noet ts=4 enc=utf-8 :
