@@ -50,8 +50,7 @@ class action_plugin_poldek extends DokuWiki_Action_Plugin {
 
 		if (!empty($packages)) {
 			$helper = $this->loadHelper($this->getPluginName(), true);
-			// TODO: skip updating if last update is fresh enough
-			$helper->sync();
+			$helper->sync(true);
 		}
     }
 }

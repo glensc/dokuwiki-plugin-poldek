@@ -68,6 +68,7 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 		}
 
 		$helper = $this->loadHelper($this->getPluginName(), true);
+		$helper->sync();
 
 		// TODO: in preview and in history pages ($REV) the metadata is
 		// outdated (it is always for recent page version)

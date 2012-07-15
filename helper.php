@@ -1,6 +1,6 @@
 <?php
 /**
- * Poldek Plugin:  query poldek for package info
+ * Poldek Plugin: query poldek for package info
  *
  * Add poldek tags to dokuwiki
  *
@@ -21,8 +21,24 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	/**
 	 * Update poldek indexes for active repos
 	 */
-	public function sync() {
-		$this->exec("--up");
+	public function sync($update = false) {
+		global $conf;
+		$cachefile = $conf['cachedir'].'/'.$this->getPluginName().'.lastupdate';
+
+		// if cache is older than locktime, update it now
+		$mtime = time() - $conf['locktime'];
+		if (!file_exists($cachefile)) {
+			$update = true;
+		} elseif (filemtime($cachefile) < time() - $conf['locktime']) {
+			$update = true;
+		}
+
+		if ($update) {
+			$this->exec("--up");
+			touch($cachefile);
+			// clear stat cache otherwise in same request we won't see mtime update
+			clearstatcache();
+		}
 	}
 
 	public function ls($packages, $package) {
