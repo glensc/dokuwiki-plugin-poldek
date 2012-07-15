@@ -5,9 +5,9 @@
  *
  * @author     Elan Ruusamäe <glen@delfi.ee>
  */
-$conf['cachedir'] = array('string');
-$conf['http_proxy'] = array('string', '_pattern' => '{^(?:$|https?://\S+$)}i');
-$conf['ftp_proxy'] = array('string', '_pattern' => '{^(?:$|https?://\S+$)}i');
-$conf['repos'] = array('string');
+$meta['cachedir'] = array('string');
+$meta['http_proxy'] = array('string', '_pattern' => '{^(?:$|https?://\S+$)}i');
+$meta['ftp_proxy'] = array('string', '_pattern' => '{^(?:$|https?://\S+$)}i');
+$meta['repos'] = array('string');
 
 //Setup VIM: ex: noet ts=4 enc=utf-8 :
