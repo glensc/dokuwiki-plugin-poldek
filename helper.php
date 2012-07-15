@@ -34,10 +34,8 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	}
 
 	private function exec($cmd, &$lines = null) {
-		$cachedir = $this->getConf('cachedir');
-		if (!$cachedir) {
-			$cachedir = '/tmp/dw-poldek';
-		}
+		global $conf;
+		$cachedir = $conf['cachedir'].'/'.$this->getPluginName();
 
 		// base poldek command
 		$poldek = 'exec poldek -q --skip-installed -O cachedir=' . escapeshellarg($cachedir);
