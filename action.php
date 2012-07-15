@@ -9,12 +9,6 @@
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-if(!defined('DOKU_DATA')) define('DOKU_DATA',DOKU_INC.'data/');
-
-require_once(DOKU_PLUGIN.'action.php');
-require_once(DOKU_INC.'inc/search.php');
-require_once(DOKU_INC.'inc/io.php');
 
 /**
  * Poldek Action Plugin: Update poldek indexes
