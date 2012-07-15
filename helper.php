@@ -17,48 +17,43 @@ if(!defined('DOKU_INC')) die();
  * @author     Elan Ruusamäe <glen@delfi.ee>
  */
 class helper_plugin_poldek extends DokuWiki_Plugin {
+	/*
+	 * @var cache $cache
+	 */
+	private $cache;
+	/**
+	 * @var bool $cache_ok
+	 */
+	private $cache_ok;
+
+	public function __construct() {
+		global $conf;
+		$this->cache = new cache($this->getPluginName(), '.txt');
+		$this->cache_ok = $this->cache->useCache(array('age' => $conf['locktime']));
+	}
+
 	/**
 	 * Update poldek indexes for active repos
+	 * Save down list of packages.
 	 */
-	public function sync($update = false) {
-		global $conf;
-		$cachefile = $conf['cachedir'].'/'.$this->getPluginName().'.lastupdate';
-
-		// if cache is older than locktime, update it now
-		$mtime = time() - $conf['locktime'];
-		if (!file_exists($cachefile)) {
-			$update = true;
-		} elseif (filemtime($cachefile) < time() - $conf['locktime']) {
-			$update = true;
-		}
-
-		if ($update) {
-			$this->exec("--up");
-			touch($cachefile);
-			// clear stat cache otherwise in same request we won't see mtime update
-			clearstatcache();
+	public function sync($force = false) {
+		if (!$this->cache_ok) {
+			// without force update indexes only if cache is missing
+			if ($force || !file_exists($this->cache->cache)) {
+				$this->exec("--up");
+				$lines = $this->shcmd("ls", $rc);
+				$this->cache->storeCache(join("\n", $lines));
+			}
 		}
 	}
 
-	public function ls($packages, $package) {
-		static $cache;
-		$key = md5(serialize($packages));
-		if (isset($cache[$key])) {
-			$lines = &$cache[$key];
-		} else {
-			$lines = $this->shcmd("ls " . implode(" ", $packages), $rc);
-			if ($rc) {
-				# try for each package separately to catch errors
-				# https://bugs.launchpad.net/poldek/+bug/1024970
-				$lines = array();
-				foreach ($packages as $p) {
-					$lines = array_merge($lines, $this->shcmd("ls " . $p));
-				}
-			}
-			$cache[$key] = &$lines;
-		}
+	public function ls($package) {
+		global $conf;
 
-		foreach ($lines as &$line) {
+		$this->sync();
+		$lines = explode("\n", $this->cache->retrieveCache(false));
+
+		foreach ($lines as $line) {
 			if (preg_match('/^(?P<name>.+)-(?P<version>[^-]+)-(?P<release>[^-]+)\.(?P<arch>[^.]+)$/', $line, $m)) {
 				if ($m['name'] == $package) {
 					return $line;
@@ -69,6 +64,8 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 				}
 			}
 		}
+
+		return "error: $package: no such package";
 	}
 
 	/**
@@ -102,6 +99,7 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 
 		$poldek .= " $cmd";
 
+		error_log($poldek);
 		exec($poldek, $lines, $rc);
 		return $lines;
 	}

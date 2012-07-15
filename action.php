@@ -39,13 +39,8 @@ class action_plugin_poldek extends DokuWiki_Action_Plugin {
 
         $this->run = true;
 
-        global $ID;
-		$packages = p_get_metadata($ID, "plugin_" . $this->getPluginName());
-
-		if (!empty($packages)) {
-			$helper = $this->loadHelper($this->getPluginName(), true);
-			$helper->sync(true);
-		}
+		$helper = $this->loadHelper($this->getPluginName(), true);
+		$helper->sync(true);
     }
 }
 

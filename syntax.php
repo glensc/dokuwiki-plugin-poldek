@@ -53,26 +53,12 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	 * Create output
 	 */
 	public function render($format, &$renderer, $data) {
-		global $ID;
-		global $REV;
-
-		if ($format == "metadata") {
-			// add each package to metadata for group retrieval
-			$packages = &$renderer->meta["plugin_" . $this->getPluginName()];
-			$packages[] = $data['pkg'];
-			$packages = array_unique($packages);
-			return true;
-		} elseif ($format != 'xhtml') {
+		if ($format != 'xhtml') {
 			return false;
 		}
 
 		$helper = $this->loadHelper($this->getPluginName(), true);
-		$helper->sync();
-
-		// TODO: in preview and in history pages ($REV) the metadata is
-		// outdated (it is always for recent page version)
-		$packages = p_get_metadata($ID, "plugin_" . $this->getPluginName());
-		$renderer->doc .= $helper->ls($packages, $data['pkg']);
+		$renderer->doc .= $helper->ls($data['pkg']);
 
 		return true;
 	}
