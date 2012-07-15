@@ -18,7 +18,6 @@ require_once(DOKU_PLUGIN.'syntax.php');
  * need to inherit from this class
  */
 class helper_plugin_poldek extends DokuWiki_Plugin {
-
 	/**
 	 * Update poldek indexes for active repos
 	 */
@@ -26,14 +25,45 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 		$this->exec("--up");
 	}
 
+	public function ls($packages, $package) {
+		static $cache;
+		$key = md5(serialize($packages));
+		if (isset($cache[$key])) {
+			$lines = &$cache[$key];
+		} else {
+			$lines = $this->shcmd("ls " . implode(" ", $packages), $rc);
+			if ($rc) {
+				# try for each package separately to catch errors
+				# https://bugs.launchpad.net/poldek/+bug/1024970
+				$lines = array();
+				foreach ($packages as $p) {
+					$lines = array_merge($lines, $this->shcmd("ls " . $p));
+				}
+			}
+			$cache[$key] = &$lines;
+		}
+
+		foreach ($lines as &$line) {
+			if (preg_match('/^(?P<name>.+)-(?P<version>[^-]+)-(?P<release>[^-]+)\.(?P<arch>[^.]+)$/', $line, $m)) {
+				if ($m['name'] == $package) {
+					return $line;
+				}
+			} elseif (preg_match('/error: (?P<name>.+): no such package or directory/', $line, $m)) {
+				if ($m['name'] == $package) {
+					return $line;
+				}
+			}
+		}
+	}
+
 	/**
 	 * Query poldek database
 	 */
-	public function query($cmd, &$lines) {
-		return $this->exec('-Q --shcmd='.escapeshellarg($cmd), $lines);
+	public function shcmd($cmd, &$rc = null) {
+		return $this->exec('-Q --shcmd='.escapeshellarg($cmd), $rc);
 	}
 
-	private function exec($cmd, &$lines = null) {
+	private function exec($cmd, &$rc = null) {
 		global $conf;
 		$cachedir = $conf['cachedir'].'/'.$this->getPluginName();
 
@@ -57,9 +87,8 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 
 		$poldek .= " $cmd";
 
-		error_Log("poldek [$poldek]");
 		exec($poldek, $lines, $rc);
-		return $rc;
+		return $lines;
 	}
 }
 

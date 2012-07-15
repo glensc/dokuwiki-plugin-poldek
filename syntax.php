@@ -55,11 +55,19 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	 */
 	public function render($format, &$renderer, $data) {
 		global $ID;
-		if ($format != 'xhtml') {
+		global $REV;
+
+		if ($format == "metadata") {
+			// add each package to metadata for group retrieval
+			$packages = &$renderer->meta["plugin_" . $this->getPluginName()];
+			$packages[] = $data['pkg'];
+			$packages = array_unique($packages);
+			return true;
+		} elseif ($format != 'xhtml') {
 			return false;
 		}
 
-		$helper = $this->loadHelper('poldek', true);
+		$helper = $this->loadHelper($this->getPluginName(), true);
 
 		static $sync = false;
 		if (!$sync) {
@@ -68,23 +76,16 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 			$sync = true;
 		}
 
-		$rc = $helper->query("ls {$data['pkg']}", $lines);
-		if ($rc) {
-			if (preg_match('/^error:.*no such package or directory/', $lines[0])) {
-				$renderer->doc .= join(' ', $lines);
-			} else {
-				dbglog($lines);
-				$renderer->doc .= "<b style='color: red'>poldek error, see debug.log for details</b>";
-			}
-		} else {
-			$renderer->doc .= join("\n", $lines);
-		}
+		// TODO: in preview and in history pages ($REV) the metadata is
+		// outdated (it is always for recent page version)
+		$packages = p_get_metadata($ID, "plugin_" . $this->getPluginName());
+		$renderer->doc .= $helper->ls($packages, $data['pkg']);
 
 		return true;
 	}
 
 	/**
-	 * Somewhy Syntax plugins don't have this method. duplicate
+	 * FIXME: Somewhy Syntax plugins don't have this method. duplicate
 	 *
 	 * Loads a given helper plugin (if enabled)
 	 *
