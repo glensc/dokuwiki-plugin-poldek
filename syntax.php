@@ -14,14 +14,6 @@ if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 require_once(DOKU_PLUGIN.'syntax.php');
 
 /**
-$conf['plugin']['poldek']['cachedir'] = '/tmp/dw-poldek';
-$conf['plugin']['poldek']['http_proxy'] = 'http://proxy.delfi.lan:3128/';
-$conf['plugin']['poldek']['ftp_proxy'] = 'http://proxy.delfi.lan:3128/';
-$conf['plugin']['poldek']['repos'] = 'dsl';
-$conf['plugin']['poldek']['debug'] = true;
- */
-
-/**
  * All DokuWiki plugins to extend the parser/rendering mechanism
  * need to inherit from this class
  */
