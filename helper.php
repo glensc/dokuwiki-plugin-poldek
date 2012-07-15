@@ -28,7 +28,8 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 
 	public function __construct() {
 		global $conf;
-		$this->cache = new cache($this->getPluginName(), '.txt');
+		$repos = $this->getConf('repos');
+		$this->cache = new cache($this->getPluginName() . $repos, '.txt');
 		$this->cache_ok = $this->cache->useCache(array('age' => $conf['locktime']));
 	}
 
