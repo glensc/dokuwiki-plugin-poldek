@@ -35,14 +35,26 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	/**
 	 * Update poldek indexes for active repos
 	 * Save down list of packages.
+	 *
+	 * Called by ls command, or from cron
 	 */
 	public function sync($force = false) {
-		if (!$this->cache_ok) {
-			// without force update indexes only if cache is missing
-			if ($force || !file_exists($this->cache->cache)) {
-				$this->exec("--up");
-				$lines = $this->shcmd("ls", $rc);
+		if ($this->cache_ok) {
+			return;
+		}
+
+		// without force update indexes only if cache is missing
+		$cache_exists = file_exists($this->cache->cache);
+		if ($force || !$cache_exists) {
+			$lines = $this->exec("--up", $rc);
+			// process output, if we find "Writing ..." line, means we should update ls output as well
+			// Writing /root/.poldek-cache/[...]/packages.ndir.gz...
+			if (!$cache_exists || preg_grep('/^Writing /', $lines)) {
+				$lines = $this->shcmd("ls");
 				$this->cache->storeCache(join("\n", $lines));
+			} else {
+				// freshen timestamp
+				touch($this->cache->cache);
 			}
 		}
 	}
@@ -72,7 +84,7 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	 * Query poldek database
 	 */
 	public function shcmd($cmd, &$rc = null) {
-		return $this->exec('-Q --shcmd='.escapeshellarg($cmd), $rc);
+		return $this->exec('-q --skip-installed -Q --shcmd='.escapeshellarg($cmd), $rc);
 	}
 
 	private function exec($cmd, &$rc = null) {
@@ -80,7 +92,7 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 		$cachedir = $conf['cachedir'].'/'.$this->getPluginName();
 
 		// base poldek command
-		$poldek = 'exec poldek -q --skip-installed -O cachedir=' . escapeshellarg($cachedir);
+		$poldek = 'exec poldek -O cachedir=' . escapeshellarg($cachedir);
 
 		$repos = $this->getConf('repos');
 		foreach (explode(',', $repos) as $repo) {
@@ -99,7 +111,6 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 
 		$poldek .= " $cmd";
 
-		error_log($poldek);
 		exec($poldek, $lines, $rc);
 		return $lines;
 	}
