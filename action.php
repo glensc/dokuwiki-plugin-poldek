@@ -48,7 +48,7 @@ class action_plugin_poldek extends DokuWiki_Action_Plugin {
 	 * Update page cache dependencies
 	 */
 	function cache(&$event, $param) {
-		global $conf, $ID;
+		global $ID;
 
 		$cache =& $event->data;
 
