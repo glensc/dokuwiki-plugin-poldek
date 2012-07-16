@@ -57,10 +57,18 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 					// freshen timestamp or we keep updating indexes if index
 					// is older than locktime
 					touch($idx_cache->cache);
+					if ($force) {
+						// sleep, so packages cache be newer
+						sleep(1);
+					}
+					// touch also package file, not to trigger it's update
+					touch($pkg_cache->cache);
+					clearstatcache();
 				}
 			}
 		}
 
+		// do not update listing, if cache exists and not in cron mode
 		if (($force || !$cache_exists) && !$pkg_cache->useCache(array('files' => array($idx_cache->cache)))) {
 			$lines = $this->shcmd("ls");
 			$pkg_cache->storeCache(join("\n", $lines));
