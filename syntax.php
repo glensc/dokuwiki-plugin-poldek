@@ -53,7 +53,13 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	 * Create output
 	 */
 	public function render($format, &$renderer, $data) {
-		if ($format != 'xhtml') {
+		if ($format == "metadata") {
+			// add packages to metadata
+			$packages = &$renderer->meta["plugin_" . $this->getPluginName()];
+			$packages[] = $data['pkg'];
+			$packages = array_unique($packages);
+			return true;
+		} elseif ($format != 'xhtml') {
 			return false;
 		}
 
