@@ -4,4 +4,4 @@ email  glen@delfi.ee
 date   2012-07-16
 name   Poldek Plugin
 desc   Plugin to display package version info from repositories
-url    https://github.com/glensc/dokuwiki-plugin-poldek
+url    http://www.dokuwiki.org/plugin:poldek
