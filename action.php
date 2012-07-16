@@ -62,10 +62,7 @@ class action_plugin_poldek extends DokuWiki_Action_Plugin {
 		}
 
 		$helper = $this->loadHelper($this->getPluginName(), true);
-		$pkg_cache = $helper->getCache();
-		if (file_exists($pkg_cache)) {
-			$cache->depends['files'][] = $pkg_cache;
-		}
+		$cache->depends['files'][] = $helper->getCache();
 	}
 }
 
