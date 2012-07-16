@@ -37,6 +37,11 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	 * Called by ls command, or from cron
 	 */
 	public function sync($force = false) {
+		// do this once per request
+		if ($this->cache) {
+			return;
+		}
+
 		global $conf;
 		$repos = $this->getConf('repos');
 
@@ -78,17 +83,24 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	}
 
 	public function ls($package) {
-		$cache = $this->getCache();
-		foreach (file($cache) as $line) {
-			if (preg_match('/^(?P<name>.+)-(?P<version>[^-]+)-(?P<release>[^-]+)\.(?P<arch>[^.]+)$/', $line, $m)) {
-				if ($m['name'] == $package) {
-					return $line;
-				}
-			} elseif (preg_match('/error: (?P<name>.+): no such package or directory/', $line, $m)) {
-				if ($m['name'] == $package) {
-					return $line;
+		static $cache;
+
+		if (!$cache) {
+			$cache = array();
+
+			// regexp matching is slow.
+			// cache this for cases having more than one instance of our plugin on page
+			foreach (file($this->getCache()) as $line) {
+				if (preg_match('/^(?P<name>.+)-(?P<version>[^-]+)-(?P<release>[^-]+)\.(?P<arch>[^.]+)$/', $line, $m)) {
+					$cache[$m['name']] = $line;
+				} elseif (preg_match('/error: (?P<name>.+): no such package or directory/', $line, $m)) {
+					$cache[$m['name']] = $line;
 				}
 			}
+		}
+
+		if (isset($cache[$package])) {
+			return $cache[$package];
 		}
 
 		return "error: $package: no such package";
