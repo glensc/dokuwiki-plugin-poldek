@@ -18,55 +18,61 @@ if(!defined('DOKU_INC')) die();
  */
 class helper_plugin_poldek extends DokuWiki_Plugin {
 	/*
-	 * @var cache $cache
+	 * Path to package list cache file
+	 * Filled by sync() method.
+	 * @var string $cache
 	 */
 	private $cache;
-	/**
-	 * @var bool $cache_ok
-	 */
-	private $cache_ok;
-
-	public function __construct() {
-		global $conf;
-		$repos = $this->getConf('repos');
-		$this->cache = new cache($this->getPluginName() . $repos, '.txt');
-		$this->cache_ok = $this->cache->useCache(array('age' => $conf['locktime']));
-	}
 
 	/**
 	 * Update poldek indexes for active repos
 	 * Save down list of packages.
 	 *
+	 * We create two cache objects, one for updating indexes, which is mtime based
+	 * And other for package list, which depends on index file.
+	 * And each page depends on the package list file
+	 *
+	 * Without force, cache is attempted to be used, even if it's stale
+	 *
 	 * Called by ls command, or from cron
 	 */
 	public function sync($force = false) {
-		if ($this->cache_ok) {
-			return;
-		}
+		global $conf;
+		$repos = $this->getConf('repos');
 
-		// without force update indexes only if cache is missing
-		$cache_exists = file_exists($this->cache->cache);
-		if ($force || !$cache_exists) {
-			$lines = $this->exec("--up", $rc);
-			// process output, if we find "Writing ..." line, means we should update ls output as well
-			// Writing /root/.poldek-cache/[...]/packages.ndir.gz...
-			if (!$cache_exists || preg_grep('/^Writing /', $lines)) {
-				$lines = $this->shcmd("ls");
-				$this->cache->storeCache(join("\n", $lines));
-			} else {
-				// freshen timestamp
-				touch($this->cache->cache);
+		$idx_cache = new cache($this->getPluginName() . $repos, '.idx');
+		$pkg_cache = new cache($this->getPluginName() . $repos, '.txt');
+		$cache_exists = file_exists($pkg_cache->cache);
+
+		// check poldek indexes
+		if (!$cache_exists || !$idx_cache->useCache(array('age' => $conf['locktime']))) {
+			// without force update indexes only if cache is missing
+			if ($force || !$cache_exists) {
+				$lines = $this->exec("--up");
+				// process output, if we find "Writing ..." line, means we should update ls output as well
+				// Writing /root/.poldek-cache/[...]/packages.ndir.gz...
+				if (!$cache_exists || preg_grep('/^Writing /', $lines)) {
+					$idx_cache->storeCache(time());
+				} else {
+					// freshen timestamp or we keep updating indexes if index
+					// is older than locktime
+					touch($idx_cache->cache);
+				}
 			}
 		}
+
+		if (($force || !$cache_exists) && !$pkg_cache->useCache(array('files' => array($idx_cache->cache)))) {
+			$lines = $this->shcmd("ls");
+			$pkg_cache->storeCache(join("\n", $lines));
+		}
+
+		$this->cache = $pkg_cache->cache;
 	}
 
 	public function ls($package) {
-		global $conf;
-
 		$this->sync();
-		$lines = explode("\n", $this->cache->retrieveCache(false));
 
-		foreach ($lines as $line) {
+		foreach (file($this->cache) as $line) {
 			if (preg_match('/^(?P<name>.+)-(?P<version>[^-]+)-(?P<release>[^-]+)\.(?P<arch>[^.]+)$/', $line, $m)) {
 				if ($m['name'] == $package) {
 					return $line;
