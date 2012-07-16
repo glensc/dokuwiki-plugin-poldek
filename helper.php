@@ -78,9 +78,8 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	}
 
 	public function ls($package) {
-		$this->sync();
-
-		foreach (file($this->cache) as $line) {
+		$cache = $this->getCache();
+		foreach (file($cache) as $line) {
 			if (preg_match('/^(?P<name>.+)-(?P<version>[^-]+)-(?P<release>[^-]+)\.(?P<arch>[^.]+)$/', $line, $m)) {
 				if ($m['name'] == $package) {
 					return $line;
@@ -96,12 +95,25 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	}
 
 	/**
-	 * Query poldek database
+	 * Get filename for package list
+	 * It ensures that cache file is created, if missing
 	 */
-	public function shcmd($cmd, &$rc = null) {
+	public function getCache() {
+		$this->sync();
+		return $this->cache;
+	}
+
+	/**
+	 * Run command in poldek
+	 */
+	private function shcmd($cmd, &$rc = null) {
 		return $this->exec('-q --skip-installed -Q --shcmd='.escapeshellarg($cmd), $rc);
 	}
 
+	/**
+	 * Run poldek with configured repositories and cachedir
+	 * Setups proxies if needed
+	 */
 	private function exec($cmd, &$rc = null) {
 		global $conf;
 		$cachedir = $conf['cachedir'].'/'.$this->getPluginName();
