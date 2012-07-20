@@ -43,10 +43,9 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 		}
 
 		global $conf;
-		$repos = $this->getConf('repos');
 
-		$idx_cache = new cache($this->getPluginName() . $repos, '.idx');
-		$pkg_cache = new cache($this->getPluginName() . $repos, '.txt');
+		$idx_cache = new cache($this->getPluginName(), '.idx');
+		$pkg_cache = new cache($this->getPluginName(), '.txt');
 		$cache_exists = file_exists($pkg_cache->cache);
 
 		// check poldek indexes
