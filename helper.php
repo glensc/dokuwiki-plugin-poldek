@@ -49,13 +49,19 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 		$cache_exists = file_exists($pkg_cache->cache);
 
 		// check poldek indexes
-		if (!$cache_exists || !$idx_cache->useCache(array('age' => $conf['locktime']))) {
+		if (!$cache_exists || !$idx_cache->useCache(array('age' => $conf['locktime'], 'files' => getConfigFiles('main')))) {
+
+			// cache is ok, if it exists and is not empty and does not contain errors
+			$cache_ok = $cache_exists && filesize($pkg_cache->cache) && !preg_grep('/^error:/', file($pkg_cache->cache));
+
 			// without force update indexes only if cache is missing
 			if ($force || !$cache_exists) {
 				$lines = $this->exec("--up");
 				// process output, if we find "Writing ..." line, means we should update ls output as well
 				// Writing /root/.poldek-cache/[...]/packages.ndir.gz...
-				if (!$cache_exists || preg_grep('/^Writing /', $lines)) {
+				// Index patches size too big
+				// Retrieving whole index ...
+				if (!$cache_exists || !$cache_ok || preg_grep('/^(Writing|Retrieving whole index) /', $lines)) {
 					$idx_cache->storeCache(time());
 				} else {
 					// freshen timestamp or we keep updating indexes if index
@@ -74,8 +80,11 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 
 		// do not update listing, if cache exists and not in cron mode
 		if (($force || !$cache_exists) && !$pkg_cache->useCache(array('files' => array($idx_cache->cache)))) {
-			$lines = $this->shcmd("ls");
-			$pkg_cache->storeCache(join("\n", $lines));
+			$lines = $this->shcmd("ls", $rc);
+			// write cache, unless there was an error
+			if (!$rc) {
+				$pkg_cache->storeCache(join("\n", $lines));
+			}
 		}
 
 		$this->cache = $pkg_cache->cache;
