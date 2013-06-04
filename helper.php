@@ -127,7 +127,7 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 	 * Run command in poldek
 	 */
 	private function shcmd($cmd, &$rc = null) {
-		return $this->exec('-q --skip-installed -Q --shcmd='.escapeshellarg($cmd), $rc);
+		return $this->exec('-q -Q --shcmd='.escapeshellarg($cmd), $rc);
 	}
 
 	/**
@@ -139,7 +139,7 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 		$cachedir = $conf['cachedir'].'/'.$this->getPluginName();
 
 		// base poldek command
-		$poldek = 'exec poldek -O cachedir=' . escapeshellarg($cachedir);
+		$poldek = 'exec poldek --skip-installed -O cachedir=' . escapeshellarg($cachedir);
 
 		$repos = $this->getConf('repos');
 		foreach (explode(',', $repos) as $repo) {
