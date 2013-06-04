@@ -141,6 +141,11 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 		// base poldek command
 		$poldek = 'exec poldek --skip-installed -O cachedir=' . escapeshellarg($cachedir);
 
+		$poldek_conf = DOKU_CONF . 'poldek.conf';
+		if (file_exists($poldek_conf)) {
+			$poldek .= ' --conf '.escapeshellarg($poldek_conf);
+		}
+
 		$repos = $this->getConf('repos');
 		foreach (explode(',', $repos) as $repo) {
 			$poldek .= ' --sn '.escapeshellarg(trim($repo));
