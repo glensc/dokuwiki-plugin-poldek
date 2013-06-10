@@ -87,7 +87,7 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 		}else{
 			$obj = null;
 		}
-		if (is_null($obj) && $msg) msg("Helper plugin $name is not available or invalid.",-1);
+		if ($obj !== null && $msg) msg("Helper plugin $name is not available or invalid.",-1);
 		return $obj;
 	}
 }
