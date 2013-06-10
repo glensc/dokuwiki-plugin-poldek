@@ -139,7 +139,7 @@ class helper_plugin_poldek extends DokuWiki_Plugin {
 		$cachedir = $conf['cachedir'].'/'.$this->getPluginName();
 
 		// base poldek command
-		$poldek = 'exec poldek --skip-installed -O cachedir=' . escapeshellarg($cachedir);
+		$poldek = 'exec poldek --skip-installed --cachedir=' . escapeshellarg($cachedir);
 
 		$poldek_conf = DOKU_CONF . 'poldek.conf';
 		if (file_exists($poldek_conf)) {
