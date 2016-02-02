@@ -42,7 +42,7 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	/**
 	 * Handle the match
 	 */
-	public function handle($match, $state, $pos, &$handler) {
+	public function handle($match, $state, $pos, Doku_Handler $handler) {
 		$raw = substr($match, 9, -2);
 
 		$data = array('pkg' => $raw);
@@ -52,7 +52,7 @@ class syntax_plugin_poldek extends DokuWiki_Syntax_Plugin {
 	/**
 	 * Create output
 	 */
-	public function render($format, &$renderer, $data) {
+	public function render($format, Doku_Renderer $renderer, $data) {
 		if ($format == "metadata") {
 			// add packages to metadata
 			$packages = &$renderer->meta["plugin_" . $this->getPluginName()];

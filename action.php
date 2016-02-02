@@ -25,7 +25,7 @@ class action_plugin_poldek extends DokuWiki_Action_Plugin {
 	/**
 	 * Register its handlers with the dokuwiki's event controller
 	 */
-	function register(&$controller) {
+	function register(Doku_Event_Handler $controller) {
 		$controller->register_hook('INDEXER_TASKS_RUN', 'BEFORE', $this, 'cron', array());
 		$controller->register_hook('PARSER_CACHE_USE','BEFORE', $this, 'cache');
 	}
