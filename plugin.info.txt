@@ -1,7 +1,7 @@
 base   poldek
 author Elan Ruusamäe
 email  glen@delfi.ee
-date   2013-06-10
+date   2016-08-18
 name   Poldek Plugin
 desc   Plugin to display package version info from repositories
 url    http://www.dokuwiki.org/plugin:poldek
